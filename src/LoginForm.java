@@ -112,10 +112,10 @@ public class LoginForm extends JFrame {
             if (resultSet.next()) {
                 user = new User();
                 user.name = resultSet.getString("name");
-                user.name = resultSet.getString("email");
-                user.name = resultSet.getString("phone");
-                user.name = resultSet.getString("address");
-                user.name = resultSet.getString("password");
+                user.email = resultSet.getString("email");
+                user.phone = resultSet.getString("phone");
+                user.address = resultSet.getString("address");
+                user.password = resultSet.getString("password");
             }
 
             preparedStatement.close();
