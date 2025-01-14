@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 import javax.swing.*;
 
@@ -41,15 +42,45 @@ public class LoginForm extends JFrame {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
                 String email = tfEmail.getText();
                 String password = String.valueOf(pfPassword.getPassword());
+
+                User user = getAuthenticatedUser(email, password);
+
+                if (user != null) {
+                    MainFrame mainFrame = new MainFrame();
+                    mainFrame.initialize(user);
+                    dispose();
+                } else {
+                    JOptionPane.showMessageDialog(LoginForm.this,
+                            "Email or Password Invalid",
+                            "Try again",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
             
         });
 
+        JButton btnCancel = new JButton("Cancel");
+        btnCancel.setFont(mainFont);
+        btnCancel.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+            }
+
+        });
+
+        JPanel buttonsPanel = new JPanel();
+        buttonsPanel.setLayout(new GridLayout(1,2,10,0));
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 30, 50));
+        buttonsPanel.add(btnLogin);
+        buttonsPanel.add(btnCancel);
+
         // Initialise the frame
         add(formPanel, BorderLayout.NORTH);
+        add(buttonsPanel, BorderLayout.SOUTH);
 
         setTitle("Login Form");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -58,5 +89,46 @@ public class LoginForm extends JFrame {
         // setResizable(false);
         setLocationRelativeTo(null);
         setVisible(true);
+    }
+
+    private User getAuthenticatedUser(String email, String password) {
+        User user = null;
+
+        final String DB_URL = "jdbc:mysql://localhost/proiectare?serverTimezone=UTC";
+        final String USERNAME = "root";
+        final String PASSWORD = "";
+
+        try {
+            Connection conn = DriverManager.getConnection(DB_URL, USERNAME, PASSWORD);
+            // Connected to database successfully...
+
+            String sql = "SELECT * FROM users WHERE email=? AND password=?";
+            PreparedStatement preparedStatement = conn.prepareStatement(sql);
+            preparedStatement.setString(1, email);
+            preparedStatement.setString(2, password);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                user = new User();
+                user.name = resultSet.getString("name");
+                user.name = resultSet.getString("email");
+                user.name = resultSet.getString("phone");
+                user.name = resultSet.getString("address");
+                user.name = resultSet.getString("password");
+            }
+
+            preparedStatement.close();
+            conn.close();
+        } catch(Exception e) {
+            System.out.println("Database connection failed!");
+        }
+
+        return user;
+    }
+
+    public static void main(String[] args) {
+        LoginForm loginForm = new LoginForm();
+        loginForm.initialize();
     }
 }
